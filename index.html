@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
     <title>Gravity Flip</title>
     <style>
         * {
@@ -54,7 +54,7 @@
             color: white;
             font-size: clamp(12px, 2.5vw, 16px);
             z-index: 10;
-            display: none; /* Hidden by default, shown only during start screen */
+            display: none;
         }
         .score {
             position: absolute;
@@ -73,8 +73,6 @@
             font-size: clamp(12px, 2.5vw, 16px);
             z-index: 10;
         }
-
-        
         @media (max-width: 800px) {
             #gameContainer {
                 width: 100vw;
@@ -95,7 +93,6 @@
                 right: 5px;
             }
         }
-        
         @media (orientation: landscape) and (max-height: 500px) {
             .instructions {
                 font-size: 10px;
@@ -122,27 +119,25 @@
         const scoreElement = document.getElementById('score');
         const highScoreElement = document.getElementById('highScore');
         const instructionsElement = document.getElementById('instructions');
-        
-        // Make canvas responsive
+
         function resizeCanvas() {
             const container = document.getElementById('gameContainer');
             const containerRect = container.getBoundingClientRect();
             const aspectRatio = 800 / 600;
-            
+
             let canvasWidth = containerRect.width;
             let canvasHeight = containerRect.height;
-            
+
             if (canvasWidth / canvasHeight > aspectRatio) {
                 canvasWidth = canvasHeight * aspectRatio;
             } else {
                 canvasHeight = canvasWidth / aspectRatio;
             }
-            
+
             canvas.style.width = canvasWidth + 'px';
             canvas.style.height = canvasHeight + 'px';
         }
-        
-        // Initial resize and setup resize listener
+
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
         window.addEventListener('orientationchange', () => {
@@ -153,53 +148,48 @@
         const BALL_SIZE = 15;
         const GRAVITY_STRENGTH = 0.3;
         const MAX_SPEED = 5;
-        const INITIAL_SCROLL_SPEED = 2;
-        const MAX_SCROLL_SPEED = 4;
-        const SPEED_INCREASE_RATE = 0.002;
+        const INITIAL_SCROLL_SPEED = 1;  // Reduced speed
+        const MAX_SCROLL_SPEED = 1;      // Same as initial, no speed increase
+        const SPEED_INCREASE_RATE = 0;   // Disable speed increase
 
-        // Game variables (minimal as requested)
+        // Game variables
         let ballX = 100;
         let ballY = 300;
-        let gravityDir = 1; // 1 = down, -1 = up
+        let gravityDir = 1;
         let scrollX = 0;
         let score = 0;
         let currentScrollSpeed = INITIAL_SCROLL_SPEED;
         let gameStarted = false;
         let highScore = 0;
-        
+
         let ballVelY = 0;
         let gameRunning = true;
 
-        // Simple level generation - platforms
         const platforms = [];
-        
+
         function generatePlatforms() {
             platforms.length = 0;
-            for (let x = 300; x < 5000; x += 250 + Math.random() * 150) { // Much more spacing between obstacles
-                // Ensure minimum gap size is very generous
-                const minGapSize = BALL_SIZE * 6; // 6x ball size for easy passage
+            for (let x = 300; x < 5000; x += 250 + Math.random() * 150) {
+                const minGapSize = BALL_SIZE * 6;
                 const maxGapSize = 300;
                 const gapSize = minGapSize + Math.random() * (maxGapSize - minGapSize);
-                
-                // Calculate platform heights to ensure the gap size
+
                 const totalWallSpace = canvas.height - gapSize;
                 const topHeight = 50 + Math.random() * (totalWallSpace - 100);
                 const bottomHeight = totalWallSpace - topHeight;
-                
-                // Top platform
+
                 platforms.push({
                     x: x,
                     y: 0,
-                    width: 80, // Thinner platforms
-                    height: topHeight
+                    width: 80,
+                    height: topHeight,
                 });
-                
-                // Bottom platform
+
                 platforms.push({
                     x: x,
                     y: canvas.height - bottomHeight,
-                    width: 80, // Thinner platforms
-                    height: bottomHeight
+                    width: 80,
+                    height: bottomHeight,
                 });
             }
         }
@@ -214,45 +204,39 @@
             currentScrollSpeed = INITIAL_SCROLL_SPEED;
             gameRunning = true;
             gameStarted = false;
-            instructionsElement.style.display = 'block'; // Show instructions again on reset
+            instructionsElement.style.display = 'block';
             generatePlatforms();
         }
 
         function update() {
             if (!gameRunning) return;
-            
-            // Don't start moving until player makes first input
             if (!gameStarted) return;
 
-            // Apply gravity
             ballVelY += gravityDir * GRAVITY_STRENGTH;
-            
-            // Limit speed
+
             if (ballVelY > MAX_SPEED) ballVelY = MAX_SPEED;
             if (ballVelY < -MAX_SPEED) ballVelY = -MAX_SPEED;
-            
-            // Update ball position
+
             ballY += ballVelY;
-            
-            // Gradually increase scroll speed
-            currentScrollSpeed = Math.min(MAX_SCROLL_SPEED, INITIAL_SCROLL_SPEED + (scrollX * SPEED_INCREASE_RATE));
-            
-            // Auto scroll
+
+            // Keep speed constant, no increase
+            currentScrollSpeed = INITIAL_SCROLL_SPEED;
+
             scrollX += currentScrollSpeed;
             score = Math.floor(scrollX / 10);
-            
-            // Check collisions with canvas bounds
+
             if (ballY - BALL_SIZE < 0 || ballY + BALL_SIZE > canvas.height) {
                 gameOver();
                 return;
             }
-            
-            // Check platform collisions
+
             for (let platform of platforms) {
-                if (ballX + BALL_SIZE > platform.x - scrollX &&
+                if (
+                    ballX + BALL_SIZE > platform.x - scrollX &&
                     ballX - BALL_SIZE < platform.x + platform.width - scrollX &&
                     ballY + BALL_SIZE > platform.y &&
-                    ballY - BALL_SIZE < platform.y + platform.height) {
+                    ballY - BALL_SIZE < platform.y + platform.height
+                ) {
                     gameOver();
                     return;
                 }
@@ -260,11 +244,9 @@
         }
 
         function render() {
-            // Clear canvas
             ctx.fillStyle = '#333';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // Draw platforms
+
             ctx.fillStyle = '#fff';
             for (let platform of platforms) {
                 const screenX = platform.x - scrollX;
@@ -272,143 +254,49 @@
                     ctx.fillRect(screenX, platform.y, platform.width, platform.height);
                 }
             }
-            
-            // Draw ball
+
             ctx.fillStyle = gameRunning ? '#4CAF50' : '#f44336';
             ctx.beginPath();
             ctx.arc(ballX, ballY, BALL_SIZE, 0, Math.PI * 2);
             ctx.fill();
-            
-            // Draw gravity indicator
+
             ctx.fillStyle = '#FFD700';
             ctx.font = '30px Arial';
             ctx.fillText(gravityDir === 1 ? '↓' : '↑', ballX - 10, ballY - 30);
-            
-            // Game start instructions
+
             if (!gameStarted && gameRunning) {
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
-                
+
                 ctx.fillStyle = '#fff';
                 ctx.font = 'clamp(24px, 5vw, 36px) Arial';
                 ctx.textAlign = 'center';
                 ctx.fillText('GRAVITY FLIP', canvas.width / 2, canvas.height / 2 - 80);
-                
+
                 ctx.font = 'clamp(14px, 3vw, 20px) Arial';
                 ctx.fillText('🌍 Gravity pulls your ball down or up', canvas.width / 2, canvas.height / 2 - 30);
                 ctx.fillText('⚡ TAP SCREEN or SPACE to flip gravity', canvas.width / 2, canvas.height / 2);
                 ctx.fillText('🎯 Navigate through white platforms', canvas.width / 2, canvas.height / 2 + 30);
                 ctx.fillText('📈 Speed increases as you progress', canvas.width / 2, canvas.height / 2 + 60);
-                
+
                 ctx.font = 'clamp(18px, 4vw, 24px) Arial';
                 ctx.fillStyle = '#4CAF50';
                 ctx.fillText('TAP SCREEN to Start!', canvas.width / 2, canvas.height / 2 + 110);
                 ctx.textAlign = 'left';
             }
-            
-            // Update score displays
+
             scoreElement.textContent = `Score: ${score}`;
             highScoreElement.textContent = `Best: ${highScore}`;
-            
-            // Game over message
+
             if (!gameRunning) {
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
-                
+
                 ctx.fillStyle = '#fff';
                 ctx.font = '48px Arial';
                 ctx.textAlign = 'center';
                 ctx.fillText('Game Over!', canvas.width / 2, canvas.height / 2 - 40);
-                
+
                 ctx.font = '24px Arial';
-                ctx.fillText(`Final Score: ${score}`, canvas.width / 2, canvas.height / 2 + 10);
-                ctx.fillText('Press SPACE to restart', canvas.width / 2, canvas.height / 2 + 50);
-                ctx.textAlign = 'left';
-            }
-        }
+                ctx.fillText(`Final Score: ${
 
-        function gameOver() {
-            gameRunning = false;
-            // Update high score
-            if (score > highScore) {
-                highScore = score;
-            }
-        }
-
-        function flipGravity() {
-            if (gameRunning) {
-                if (!gameStarted) {
-                    gameStarted = true; // Start the game on first input
-                    instructionsElement.style.display = 'none'; // Hide instructions during gameplay
-                }
-                gravityDir *= -1;
-                // Immediately reduce velocity to make flip feel more responsive
-                ballVelY *= 0.5;
-            } else {
-                resetGame();
-            }
-        }
-
-        // Input handling - mobile-friendly with better touch support
-        let spacePressed = false;
-        let touchStarted = false;
-        
-        document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space' && !spacePressed) {
-                e.preventDefault();
-                spacePressed = true;
-                flipGravity();
-            }
-        });
-        
-        document.addEventListener('keyup', (e) => {
-            if (e.code === 'Space') {
-                spacePressed = false;
-            }
-        });
-
-        // Enhanced touch/click handling for mobile
-        function handleInput(e) {
-            e.preventDefault();
-            flipGravity();
-        }
-        
-        canvas.addEventListener('click', handleInput);
-        canvas.addEventListener('touchstart', handleInput, { passive: false });
-        
-        // Handle touches anywhere on the screen for easier mobile play
-        document.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            flipGravity();
-        }, { passive: false });
-        
-        // Also handle clicks anywhere on the screen
-        document.addEventListener('click', (e) => {
-            if (e.target !== canvas) {
-                e.preventDefault();
-                flipGravity();
-            }
-        });
-        
-        // Prevent default touch behaviors
-        document.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-        }, { passive: false });
-        
-        document.addEventListener('touchend', (e) => {
-            e.preventDefault();
-        }, { passive: false });
-
-        // Game loop
-        function gameLoop() {
-            update();
-            render();
-            requestAnimationFrame(gameLoop);
-        }
-
-        // Initialize and start
-        generatePlatforms();
-        gameLoop();
-    </script>
-</body>
-</html>
